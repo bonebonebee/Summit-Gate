@@ -1,0 +1,276 @@
+def lowestHealth():
+    lowestHealth = 99999
+    lowestFriend = None
+    friends = self.findFriends()
+    
+    for friend in friends:
+       if friend.type == "paladin": 
+          if friend.health < lowestHealth and friend.health < friend.maxHealth:
+             lowestHealth = friend.health
+             lowestFriend = friend
+    if self.health < self.maxHealth:
+       lowestFriend = self
+    return lowestFriend
+def healLowestHealth(person):
+    lowestHealth = 99999
+    lowestFriend = None
+    friends = self.findFriends()
+    
+    for friend in friends:
+       if friend.health < lowestHealth and friend.health < friend.maxHealth:
+          lowestHealth = friend.health
+          lowestFriend = friend
+    if self.health < self.maxHealth:
+       lowestFriend = self
+    
+    if lowestFriend:
+       self.command(person,"cast","heal", lowestFriend)
+       
+def commandHeal(paladin):
+      # Heal the paladin with the lowest health using lowestHealthPaladin() 
+    if paladin:
+           
+        if paladin.canCast("heal"):
+            person = lowestHealth()
+            if person:
+               self.command(paladin, "cast", "heal", person)
+               person.say("paladin healed")
+            else:
+               return False
+        else:    
+            self.command(paladin, "shield")
+       
+    return True
+def myCleaveAttack(bad):
+    if bad:
+       if self.isReady("cleave"):
+           self.cleave(bad)
+       else:
+           self.attack(bad)
+def findStrongestEnemy(friend, enemyOrder):
+    nearestStrong=None
+    
+    enemyOrderIndex=0
+    enemies = self.findEnemies()
+    while enemyOrderIndex < len(enemyOrder):
+       minD=9999
+       for enemy in enemies:
+          if enemy.type == enemyOrder[enemyOrderIndex]:
+             distance = friend.distanceTo(enemy)
+             if distance < minD:
+                minD = distance
+                nearestStrong = enemy
+       if nearestStrong:
+           return nearestStrong
+       enemyOrderIndex +=1
+    
+    return None
+loop:
+    enemies =self.findEnemies()
+    if self.gold>self.costOf("griffin-rider"):
+        self.summon("griffin-rider")
+
+    friends = self.findFriends()
+    for friend in friends:
+        if friend.type == "griffin-rider":
+            enemy = findStrongestEnemy(friend,["thrower","fangrider", "ogre"])
+            if enemy:
+                self.command(friend, "attack", enemy)
+        elif friend.type == "archer":
+            enemy = findStrongestEnemy(friend,["thrower","fangrider", "ogre"])
+            if enemy:
+                self.command(friend, "attack", enemy)            
+        elif friend.type == "soldier":
+            
+            self.command(friend, "move",{"x":97,"y":36})
+        elif friend.type == "paladin":
+            self.command(friend, "move", {"x":97,"y":36})
+                
+    self.move({"x":98,"y":35})
+    if self.now() > 7.5:
+        break
+
+
+bombSoldierCount=0
+loop:
+    self.move({"x":98,"y":35})
+    enemies =self.findEnemies()
+    friends = self.findFriends()
+    for friend in friends:
+        
+       if bombSoldierCount <4:
+          if friend.type == "soldier":
+             if bombSoldierCount==0 or bombSoldierCount==2:
+                self.command(friend, "move",{"x":92,"y":58})
+             else:
+                self.command(friend, "move",{"x":92,"y":10})
+             
+             bombSoldierCount+=1
+
+       if friend.type == "archer":
+          self.command(friend, "move",{"x":self.pos.x+10,"y":self.pos.y})
+            
+       if self.now() > 12:
+           break
+    if self.now() > 12:
+        break
+def attackCloseEnemy(MaxD):
+   loop:
+      enemy= self.findNearest(self.findEnemies())
+      if enemy:
+         distance = self.distanceTo(enemy)
+         if distance < MaxD:
+            myCleaveAttack(enemy)
+         else:
+            break
+      else:
+         break   
+               
+# at the door, restore everyone health
+def restoreHealth():
+   friends = self.findFriends()
+   
+   loop:
+      anyoneHurt = True
+      for friend in friends:
+          if friend.type == "paladin":
+             anyoneHurt = commandHeal(friend)
+
+      if anyoneHurt==False:
+         break
+
+restoreHealth()
+# move archer further away
+friends = self.findFriends()
+for i in range(10):
+    self.attack("Outer Gate")
+for friend in friends:
+   self.command(friend, "defend",{"x":60,"y":34})
+self.moveXY(68, 35)   
+attackCloseEnemy(30)
+  
+restoreHealth()
+self.say("Ready")
+
+for friend in friends:
+   self.command(friend, "move",{"x":103,"y":34})
+self.moveXY(103, 35)   
+
+
+def moveAndShield(person, x, y, tempX):
+   if person.pos.x <tempX:
+       self.command(person, "move", {"x":x,"y":y})
+   else:
+       self.command(person, "shield")
+def getEnemy(badType, index):
+    indexCount=0
+    enemies =  self.findEnemies()
+    for enemy in enemies:
+        if enemy.type == badType:
+            if indexCount==index:
+                return enemy
+            else:
+               indexCount +=1
+    return None
+    
+    
+    
+attackCount=0   
+ 
+loop:
+    enemy = self.findNearest(self.findEnemies())
+    if enemy:
+       self.attack(enemy)
+    
+    for friend in friends:
+        if friend.type == "paladin":
+            if friend.canCast("heal"):
+               self.command(friend, "cast", "heal", self)
+            else:      
+               moveAndShield(friend, self.pos.x-10, self.pos.y+10, 120)
+        else:
+            self.command(friend, "move", {"x":93,"y":34})
+            
+    if self.now()>127:
+       break    
+
+loop:
+    enemy = self.findNearest(self.findEnemies())
+    if enemy:
+       self.attack(enemy)
+    else:
+       break
+       
+justCheck=0
+self.say("hi")
+self.moveXY(198,54)
+restoreHealth()
+while self.gold > self.costOf("griffin-rider"):
+   self.summon("griffin-rider")
+   
+loop:
+    
+    friends = self.findFriends()
+    for friend in friends:
+        if friend.type == "griffin-rider":
+           self.command(friend,"move", {"x":254,"y":35})
+        if friend.type == "archer":
+           self.command(friend,"defend", {"x":255,"y":35})
+        if friend.type == "soldier":
+           self.command(friend,"defend", {"x":255,"y":35})
+        if friend.type == "paladin":
+            if friend.canCast("heal"):
+               healLowestHealth(friend)
+            else:
+               moveAndShield(friend, 245, 35, 248)
+    if justCheck ==0 or justCheck ==2 or justCheck ==4:
+       
+        if self.health >900:
+           self.moveXY(272,35)
+           justCheck+=1
+        else:
+           self.move({"x":262,"y":35})
+         
+    else:
+        enemy = findStrongestEnemy(self,["warlock", "skeleton"])
+        if enemy:
+           while enemy.health>0:
+              if enemy:
+                 self.attack(enemy)
+              friends = self.findFriends()
+              for friend in friends:
+                 
+                 if friend.type == "griffin-rider":
+                    if enemy:
+                       self.command(friend,"attack",enemy)
+                    
+              
+        
+        justCheck+=1
+    if justCheck >4:
+        break
+           
+restoreHealth()
+loop:
+#    item = self.findNearest(self.findItems())
+#    if item:
+#       self.move(item.pos)
+    enemy = self.findNearest(self.findEnemies())
+    if enemy:
+       self.attack(enemy)
+    if self.gold > self.costOf("griffin-rider"):
+       self.summon("griffin-rider")
+    friends = self.findFriends()
+    for friend in friends:
+        if friend.type == "griffin-rider":
+           self.command(friend,"defend", {"x":282,"y":35})
+        if friend.type == "archer":
+           self.command(friend,"defend", {"x":282,"y":35})
+        if friend.type == "soldier":
+           self.command(friend,"defend", {"x":282,"y":35})
+        if friend.type == "paladin":
+            if friend.canCast("heal"):
+               healLowestHealth(friend)
+            else:
+               moveAndShield(friend, 279, 35, 282)
+               
